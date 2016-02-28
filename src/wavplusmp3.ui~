@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.19.0 -->
+<interface>
+  <requires lib="gtk+" version="3.0"/>
+  <object class="GtkWindow" id="window">
+    <property name="visible">True</property>
+    <property name="can_focus">True</property>
+    <property name="title" translatable="yes">wavplusmp3</property>
+    <property name="resizable">False</property>
+    <property name="default_width">319</property>
+    <property name="default_height">112</property>
+    <property name="skip_taskbar_hint">True</property>
+    <signal name="destroy" handler="on_window_destroy" swapped="no"/>
+    <child>
+      <object class="GtkLayout" id="layout1">
+        <property name="width_request">319</property>
+        <property name="height_request">76</property>
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="width">319</property>
+        <property name="height">76</property>
+        <child>
+          <object class="GtkLabel" id="label1">
+            <property name="width_request">100</property>
+            <property name="height_request">32</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">Welcome</property>
+            <attributes>
+              <attribute name="font-desc" value="DejaVu Sans Bold Semi-Condensed 15"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="x">12</property>
+            <property name="y">9</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label2">
+            <property name="width_request">100</property>
+            <property name="height_request">23</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">To start, please click and choose a wav file...</property>
+            <attributes>
+              <attribute name="font-desc" value="&lt;Enter Value&gt; 8.25"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="x">12</property>
+            <property name="y">41</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEventBox" id="eventbox1">
+            <property name="width_request">262</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="visible_window">False</property>
+            <signal name="button-press-event" handler="on_eventbox1_button_press_event" swapped="no"/>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
