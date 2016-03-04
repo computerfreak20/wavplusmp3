@@ -36,74 +36,64 @@ UI_FILE = "wavplusmp3.ui"
 UI_BIT = "wavplusmp3bitrate.ui"
 #UI_FILE = "/usr/local/share/wavplusmp3/ui/wavplusmp3.ui"
 
-class bitRate:
+class bitRate(Gtk.Window):
 	def __init__(self):
 		self.builder = Gtk.Builder()
 		self.builder.add_from_file(UI_BIT)
 		self.builder.connect_signals(self)
 
-		bitwindow = self.builder.get_object('window1')
+		self.bitwindow = self.builder.get_object('window1')
 		button_start = self.builder.get_object('buttonStart')
 		radio1 = self.builder.get_object('radiobutton1')
 		radio2 = self.builder.get_object('radiobutton2')
 		radio3 = self.builder.get_object('radiobutton3')
 		radio4 = self.builder.get_object('radiobutton4')
-		def bitWin():
-			bitwindow.show_all()
 
-class GUI(bitRate):
-    
+		self.bitwindow.show_all()
+
+	def on_buttonStart_clicked(buttonStart, self):
+		print("test")
+
+class GUI(Gtk.Window):
+
 	def __init__(self):
-		
 		self.builder = Gtk.Builder()
 		self.builder.add_from_file(UI_FILE)
-		#self.builder.add_from_file(UI_BIT)
 		self.builder.connect_signals(self)
-        
-		window = self.builder.get_object('window')
+
+		self.window = self.builder.get_object('window')
 		layout1 = self.builder.get_object('layout1')
 		button1 = self.builder.get_object('button1')
 
-		'''bitwindow = self.builder.get_object('window1')
-		button_start = self.builder.get_object('buttonStart')
-		radio1 = self.builder.get_object('radiobutton1')
-		radio2 = self.builder.get_object('radiobutton2')
-		radio3 = self.builder.get_object('radiobutton3')
-		radio4 = self.builder.get_object('radiobutton4')'''
+		self.window.set_keep_above = "true"
 
-		window.set_keep_above = "true"
-
-		window.show_all()
-		test = bitWin(self)
-		test()
+		self.window.show_all()
 
 		########## check for ffmpeg ##########
 
 		try:
-			checkffmpeg = subprocess.check_call(["ffmpeg", "-version"])
+			checkffmpeg = subprocess.check_call(["ffmpeg", "-version"], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT)
 		except:
 			noffmpeg = Gtk.MessageDialog(window, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "No ffmpeg detected! This is required in order to use this program. Please download using your package manager.")
 			noffmpeg.run()
 			noffmpeg.destroy()
 			sys.exit(1)
 
-	def on_button1_clicked(button1, button):
-		
+	def on_button1_clicked(self, button1):
+
 		########## create file chooser dialog ##########
-		
+
 		newdialg = Gtk.FileChooserDialog("Choose a wav file...", None, Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-		button1.addfilters(newdialg)
+		self.addfilters(newdialg)
 		resp = newdialg.run()
 
 		if resp == Gtk.ResponseType.OK:
 			#print("Wav file selected")
 			########## attempt wav->mp3 conversion ##########
-			
-			wav_file = newdialg.get_filename()
-			#bitwind = bitWin()
-			testvar = bitWin()
-			testvar()
-			
+
+			self.wav_file = newdialg.get_filename()
+			bitRate()
+
 		elif resp == Gtk.ResponseType.CANCEL:
 			print("Cancelled")
 		newdialg.destroy()
@@ -112,12 +102,8 @@ class GUI(bitRate):
 
 	def addfilters(self,newdialg):
 		filter_wavs = Gtk.FileFilter()
-		filter_WAVS = Gtk.FileFilter()
-		filter_wavs.set_name("*.wav files")
-		filter_WAVS.set_name("*.WAV files")
-		filter_wavs.add_pattern("*.wav")
-		filter_WAVS.add_pattern("*.WAV")
-		newdialg.add_filter(filter_WAVS)
+		filter_wavs.set_name("*Wav Files")
+		filter_wavs.add_mime_type("audio/x-wav")
 		newdialg.add_filter(filter_wavs)
 
 #################### DESTROY WINDOW ####################
@@ -128,7 +114,6 @@ class GUI(bitRate):
 def main():
 	app = GUI()
 	Gtk.main()
-	
+
 if __name__ == "__main__":
 	sys.exit(main())
-
