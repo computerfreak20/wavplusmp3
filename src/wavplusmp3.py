@@ -34,6 +34,7 @@ import os, sys, signal, subprocess
 #or making the tarball (alternatively, use project variables)
 UI_FILE = "wavplusmp3.ui"
 UI_BIT = "wavplusmp3bitrate.ui"
+BRATE = "vbr"
 #UI_FILE = "/usr/local/share/wavplusmp3/ui/wavplusmp3.ui"
 
 class bitRate(Gtk.Window):
@@ -44,15 +45,49 @@ class bitRate(Gtk.Window):
 
 		self.bitwindow = self.builder.get_object('window1')
 		button_start = self.builder.get_object('buttonStart')
-		radio1 = self.builder.get_object('radiobutton1')
-		radio2 = self.builder.get_object('radiobutton2')
-		radio3 = self.builder.get_object('radiobutton3')
-		radio4 = self.builder.get_object('radiobutton4')
+		box2 = self.builder.get_object('box2')
+		self.radio1 = self.builder.get_object('radiobutton1')
+		self.radio2 = self.builder.get_object('radiobutton2')
+		self.radio3 = self.builder.get_object('radiobutton3')
+		self.radio4 = self.builder.get_object('radiobutton4')
 
 		self.bitwindow.show_all()
 
+	########## attempt wav->mp3 conversion ##########
+
 	def on_buttonStart_clicked(buttonStart, self):
-		print("test")
+		#sys.exit(1)
+		try:
+			quote = "\""
+			if BRATE != "vbr":
+				convertfile = subprocess.check_call(["ffmpeg", "-i", quote+self.wav_file+quote, "-vn", "-ar", "44100", "-ac", "2", "-ab", BRATE, "-y", "-f", "mp3", quote+self.wav_file+quote+".mp3"], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT)
+			else:
+				convertfile = subprocess.check_call(["ffmpeg", "-i", self.wav_file, "-vn", "-ar", "44100", "-ac", "2", "-aq", "5", "-y", "-f", "mp3", self.wav_file+".mp3"], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT)
+		except:
+			convert_failure = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Conversion failed!")
+			convert_failure.run()
+			convert_failure.destroy()
+			sys.exit(1)
+
+	def on_radiobutton1_toggled(self, radiobutton1):
+		if self.radio1.get_active() == True:
+			print("VBR")
+			BRATE = "vbr"
+
+	def on_radiobutton2_toggled(self, radiobutton2):
+		if self.radio2.get_active() == True:
+			print("128kbps")
+			BRATE = "128k"
+
+	def on_radiobutton3_toggled(self, radiobutton3):
+		if self.radio3.get_active() == True:
+			print("256kbps")
+			BRATE = "256k"
+
+	def on_radiobutton4_toggled(self, radiobutton4):
+		if self.radio4.get_active() == True:
+			print("320kbps")
+			BRATE = "320k"
 
 class GUI(Gtk.Window):
 
@@ -88,10 +123,11 @@ class GUI(Gtk.Window):
 		resp = newdialg.run()
 
 		if resp == Gtk.ResponseType.OK:
-			#print("Wav file selected")
-			########## attempt wav->mp3 conversion ##########
+
+			########## open bitrate dialog ##########
 
 			self.wav_file = newdialg.get_filename()
+			print(self.wav_file)
 			bitRate()
 
 		elif resp == Gtk.ResponseType.CANCEL:
