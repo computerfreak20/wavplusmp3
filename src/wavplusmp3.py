@@ -26,17 +26,37 @@
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf, Gdk
-import os, sys, signal, subprocess
+import os, sys, signal, subprocess, datetime
 
 
 #Comment the first line and uncomment the second before installing
 #or making the tarball (alternatively, use project variables)
 UI_FILE = "wavplusmp3.ui"
 UI_BIT = "wavplusmp3bitrate.ui"
+
+DATIEM = "{:%Y-%m-%d %H:%M:%S}".format(datetime.datetime.now())
+LOGSTRING = "\n#################### wavplusmp3 log | "+DATIEM+" ####################\n\n"
+LOGSTR2 = ""
+
 #UI_FILE = "/usr/local/share/wavplusmp3/ui/wavplusmp3.ui"
 
+class createLog(Gtk.Window):
+	def __init__(self):
+		try:
+			logop = open("log.txt", "a")
+			if LOGSTR2 == "":
+				logop.write(LOGSTRING)
+			else:
+				logop.write(LOGSTRING+LOGSTR2)
+				logop.close()
+		except:
+			log_failure = Gtk.MessageDialog(None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Log error!")
+			log_failure.format_secondary_text("Failed to write to the log file. Bad permissions?")
+			log_failure.run()
+			log_failure.destroy()
+
 class bitRate(Gtk.Window):
-	def __init__(self,wav_file):
+	def __init__(self, wav_file):
 		self.builder = Gtk.Builder()
 		self.builder.add_from_file(UI_BIT)
 		self.builder.connect_signals(self)
@@ -57,6 +77,7 @@ class bitRate(Gtk.Window):
 	########## attempt wav->mp3 conversion ##########
 
 	def on_buttonStart_clicked(self, buttonStart):
+		createLog()
 		try:
 			self.real_file_name = os.path.basename(self.wav_file)
 			self.edit_wav = self.real_file_name[:-4]
@@ -65,16 +86,20 @@ class bitRate(Gtk.Window):
 			convert_success.format_secondary_text(self.real_file_name+" successfully converted to "+self.edit_wav+".mp3 @ "+self.BRATE+"bps \n Now exiting...")
 
 			if self.BRATE != "vbr":
-				convertfile = subprocess.check_call(["ffmpeg", "-i", self.wav_file, "-vn", "-ar", "44100", "-ac", "2", "-ab", self.BRATE, "-y", "-f", "mp3", self.edit_wav+".mp3"], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT)
+				convertfile = subprocess.check_call(["ffmpeg", "-i", self.wav_file, "-vn", "-ar", "44100", "-ac", "2", "-ab", self.BRATE, "-y", "-f", "mp3", self.edit_wav+".mp3"], stdout=open("log.txt", "a"), stderr=subprocess.STDOUT)
 				convert_success.run()
 				convert_success.destroy()
 				Gtk.main_quit()
 			else:
-				convertfile = subprocess.check_call(["ffmpeg", "-i", self.wav_file, "-vn", "-ar", "44100", "-ac", "2", "-aq", "5", "-y", "-f", "mp3", self.edit_wav+".mp3"], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT)
+				convertfile = subprocess.check_call(["ffmpeg", "-i", self.wav_file, "-vn", "-ar", "44100", "-ac", "2", "-aq", "5", "-y", "-f", "mp3", self.edit_wav+".mp3"], stdout=open("log.txt", "a"), stderr=subprocess.STDOUT)
+				convert_success.run()
+				convert_success.destroy()
+				Gtk.main_quit()
 		except:
 			convert_failure = Gtk.MessageDialog(self.bitwindow, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Conversion failed!")
 			convert_failure.run()
 			convert_failure.destroy()
+			LOGSTR2 = "CONVERSION FAILED!!!"
 			Gtk.main_quit()
 
 	def on_radiobutton1_toggled(self, radiobutton1):
@@ -116,7 +141,7 @@ class GUI(Gtk.Window):
 			noffmpeg = Gtk.MessageDialog(self.window, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "No ffmpeg detected! This is required in order to use this program. Please download using your package manager.")
 			noffmpeg.run()
 			noffmpeg.destroy()
-			sys.exit(1)
+			Gtk.main_quit()
 
 	def on_button1_clicked(self, button1):
 
@@ -131,6 +156,7 @@ class GUI(Gtk.Window):
 			########## open bitrate dialog ##########
 
 			self.wav_file = newdialg.get_filename()
+			newdialg.destroy()
 			bitRate(self.wav_file)
 
 		elif resp == Gtk.ResponseType.CANCEL:
@@ -138,7 +164,7 @@ class GUI(Gtk.Window):
 
 	########## add filters to dialog ##########
 
-	def addfilters(self,newdialg):
+	def addfilters(self, newdialg):
 		filter_wavs = Gtk.FileFilter()
 		filter_wavs.set_name("*Wav Files")
 		filter_wavs.add_mime_type("audio/x-wav")
